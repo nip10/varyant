@@ -1,0 +1,15 @@
+---
+description: Core rules for the Varyant demo tech talk (Next.js + AI copilot)
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+- Context: Demo-focused Next.js app with AI copilot + analytics dashboard; single prod env; no tests/feature flags per scope.
+- Core stack: Next.js (app router), TypeScript, Tailwind, shadcn/ui (registry: https://ui.shadcn.com/llms.txt), Vercel AI SDK (Anthropic primary, OpenAI fallback).
+- AI SDK docs: https://ai-sdk.dev/llms.txt (AI SDK + AI Elements reference).
+- Integrations: PostHog (analytics read + seeded demo data), Linear (ticket creation), Supabase (light data/storage as needed), AI SDK tools; optional GitHub/web search from original plan.
+- Approvals: Any write action (experiments, Linear tickets, PRs) must surface an approval gate; demo-grade UX acceptable.
+- Env/secrets: Keep `.env.local` local; required keys for PostHog, Linear, Supabase, AI models; prod-only deploy, no staging.
+- Data seeding: Use `scripts/seed-posthog.ts` to create ~1k users / 20–50k events (properties include `plan`, `device`, `country`, `utm_campaign`, `demo_seed=true`); run via `yarn seed:posthog` with `--confirm`.
+- Quality bar: Optimize for reliable live demo—minimal error toasts over blank states; breadth of tools over polish; no exhaustive testing required.

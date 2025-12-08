@@ -1,23 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-
-  async rewrites() {
-    return [
+  cacheComponents: false,
+  // in a hurry, so we'll allow all domains for images
+  images: {
+    remotePatterns: [
       {
-        source: "/ingest/static/:path*",
-        destination: "https://eu-assets.i.posthog.com/static/:path*",
+        protocol: "https",
+        hostname: "*",
       },
-      {
-        source: "/ingest/:path*",
-        destination: "https://eu.i.posthog.com/:path*",
-      },
-    ];
+    ],
   },
-
-  // This is required to support PostHog trailing slash API requests
-  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;
