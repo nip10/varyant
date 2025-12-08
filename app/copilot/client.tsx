@@ -86,15 +86,8 @@ export default function CopilotClient() {
                       case "tool-createPostHogFeatureFlag":
                       case "tool-crawlWebsite":
                       case "tool-createLinearIssue":
-                        /*
-                         case "tool-queryPosthogInsight":
-                      case "tool-triggerGitHubAction":
-                      case "tool-githubReadFile":
-                      case "tool-queryPosthogEvent":
-                      case "tool-queryPosthogPageViewCount":
-                      case "tool-listPostHogExperiments":
-                      case "tool-getPostHogExperimentResults":
-                      case "tool-updateLinearIssue": */
+                      case "tool-updateLinearIssue":
+                      case "tool-triggerFeatureDevelopment":
                         if (part.approval) {
                           return (
                             <Confirmation
@@ -112,7 +105,7 @@ export default function CopilotClient() {
                                       </span>{" "}
                                       with the following input:
                                     </span>
-                                    <pre className="text-xs bg-muted/50 p-2 rounded-md block">
+                                    <pre className="text-xs bg-muted/50 p-2 rounded-md block text-wrap">
                                       {JSON.stringify(part.input, null, 2)}
                                     </pre>
                                   </div>
@@ -157,7 +150,6 @@ export default function CopilotClient() {
                             </Confirmation>
                           );
                         } else {
-                          console.log("Tool output", part.output);
                           return (
                             <Tool key={`${message.id}-${i}`}>
                               <ToolHeader type={part.type} state={part.state} />

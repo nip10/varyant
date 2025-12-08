@@ -1,19 +1,6 @@
 import { getEventCount, listExperiments } from "@/lib/integrations/posthog";
 import { TriangleAlert, CheckCircle2, Activity } from "lucide-react";
-
-type Metric = { label: string; value: string; sub?: string };
-
-function MetricCard({ metric }: { metric: Metric }) {
-  return (
-    <div className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="text-sm text-muted-foreground">{metric.label}</div>
-      <div className="text-2xl font-semibold mt-1">{metric.value}</div>
-      {metric.sub ? (
-        <div className="text-xs text-muted-foreground mt-1">{metric.sub}</div>
-      ) : null}
-    </div>
-  );
-}
+import MetricCard, { Metric } from "./metric-card";
 
 export default async function Dashboard({}: {}) {
   async function fetchMetric(event: string, dateRange = "7 DAY") {
@@ -33,7 +20,7 @@ export default async function Dashboard({}: {}) {
   async function fetchExperiments() {
     try {
       const data = await listExperiments();
-      return Array.isArray((data as any).results) ? (data as any).results : [];
+      return data;
     } catch (err) {
       console.error("Failed to fetch experiments", err);
       return [];
@@ -45,10 +32,7 @@ export default async function Dashboard({}: {}) {
     fetchMetric("signup"),
     fetchMetric("checkout"),
     fetchExperiments(),
-  ]).catch((err) => {
-    console.error("Failed to fetch metrics", err);
-    return [null, null, null, []];
-  });
+  ]);
 
   const metrics: Metric[] = [
     {
@@ -62,7 +46,7 @@ export default async function Dashboard({}: {}) {
     },
     {
       label: "Experiments",
-      value: `${experiments.length}`,
+      value: `${experiments?.length ?? 0}`,
       sub: "From PostHog /experiments",
     },
   ];

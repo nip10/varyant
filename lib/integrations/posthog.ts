@@ -48,11 +48,137 @@ export const getEventCount = async (event: string, dateRange = "30 DAY") => {
   return runHogQL("event_count", query);
 };
 
-export const listExperiments = async (status?: string) => {
-  const url = new URL(`${projectBaseUrl}/experiments`);
-  if (status) url.searchParams.set("status", status);
+export interface PosthogExperimentListResponse {
+  count: number;
+  next: any;
+  previous: any;
+  results: Result[];
+}
 
-  const res = await fetch(url, {
+export interface Result {
+  id: number;
+  name: string;
+  description?: string;
+  start_date?: string;
+  end_date: any;
+  feature_flag_key: string;
+  feature_flag: FeatureFlag;
+  holdout: any;
+  holdout_id: any;
+  exposure_cohort: any;
+  parameters: Parameters;
+  secondary_metrics: any[];
+  saved_metrics: any[];
+  saved_metrics_ids: any;
+  filters: Filters2;
+  archived: boolean;
+  deleted: boolean;
+  created_by: CreatedBy;
+  created_at: string;
+  updated_at: string;
+  type: string;
+  exposure_criteria: ExposureCriteria;
+  metrics: Metric[];
+  metrics_secondary: any[];
+  stats_config: StatsConfig;
+  conclusion: any;
+  conclusion_comment: any;
+  primary_metrics_ordered_uuids?: string[];
+  secondary_metrics_ordered_uuids: any;
+  user_access_level: string;
+}
+
+export interface FeatureFlag {
+  id: number;
+  team_id: number;
+  name: string;
+  key: string;
+  filters: Filters;
+  deleted: boolean;
+  active: boolean;
+  ensure_experience_continuity: boolean;
+  has_encrypted_payloads: boolean;
+  version: number;
+  evaluation_runtime: string;
+  bucketing_identifier: string;
+  evaluation_tags: any[];
+}
+
+export interface Filters {
+  groups: Group[];
+  payloads?: Payloads;
+  multivariate: Multivariate;
+  holdout_groups: any;
+  aggregation_group_type_index: any;
+}
+
+export interface Group {
+  variant: any;
+  properties: any[];
+  rollout_percentage: number;
+}
+
+export interface Payloads {}
+
+export interface Multivariate {
+  variants: Variant[];
+}
+
+export interface Variant {
+  key: string;
+  name?: string;
+  rollout_percentage: number;
+}
+
+export interface Parameters {
+  feature_flag_variants?: FeatureFlagVariant[];
+}
+
+export interface FeatureFlagVariant {
+  key: string;
+  rollout_percentage: number;
+  name?: string;
+}
+
+export interface Filters2 {}
+
+export interface CreatedBy {
+  id: number;
+  uuid: string;
+  distinct_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_email_verified: boolean;
+  hedgehog_config: any;
+  role_at_organization: string;
+}
+
+export interface ExposureCriteria {
+  filterTestAccounts?: boolean;
+}
+
+export interface Metric {
+  goal: string;
+  kind: string;
+  uuid: string;
+  series: Series[];
+  fingerprint: string;
+  metric_type: string;
+}
+
+export interface Series {
+  kind: string;
+  event: string;
+}
+
+export interface StatsConfig {
+  method: string;
+  timeseries?: boolean;
+}
+
+export const listExperiments = async () => {
+  const res = await fetch(`${projectBaseUrl}/experiments`, {
     headers: authHeaders,
   });
 
@@ -63,22 +189,8 @@ export const listExperiments = async (status?: string) => {
     );
   }
 
-  return res.json();
-};
-
-export const getExperiment = async (experimentId: string) => {
-  const res = await fetch(`${projectBaseUrl}/experiments/${experimentId}`, {
-    headers: authHeaders,
-  });
-
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(
-      `PostHog experiment fetch failed: ${res.status} ${message}`
-    );
-  }
-
-  return res.json();
+  const data = (await res.json()) as PosthogExperimentListResponse;
+  return data.results;
 };
 
 export type CreateExperimentInput = {
@@ -107,7 +219,7 @@ export const createExperiment = async (input: CreateExperimentInput) => {
       },
     ],
   };
-  console.log("Creating experiment", input);
+
   const res = await fetch(`${projectBaseUrl}/experiments`, {
     method: "POST",
     headers: authHeaders,
@@ -119,34 +231,6 @@ export const createExperiment = async (input: CreateExperimentInput) => {
     throw new Error(
       `PostHog experiment creation failed: ${res.status} ${message}`
     );
-  }
-
-  return res.json();
-};
-
-export type PosthogInsightResponse = {
-  name: string;
-  derived_name: string;
-  query: object;
-  order: number;
-  deleted: boolean;
-  dashboards: string[];
-  description: string;
-  tags: string[];
-  favorited: boolean;
-  _create_in_folder: string;
-};
-
-export const getInsightById = async (
-  id: string
-): Promise<PosthogInsightResponse> => {
-  const res = await fetch(`${projectBaseUrl}/insights/${id}`, {
-    headers: authHeaders,
-  });
-
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(`PostHog insight fetch failed: ${res.status} ${message}`);
   }
 
   return res.json();

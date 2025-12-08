@@ -128,7 +128,6 @@ export const ToolOutput = ({
   errorText,
   ...props
 }: ToolOutputProps) => {
-  console.log("Tool output", output, errorText);
   if (!(output || errorText)) {
     return null;
   }
