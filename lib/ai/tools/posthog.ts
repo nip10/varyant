@@ -35,10 +35,11 @@ export const posthogTools = {
     needsApproval: true,
   }),
   createPostHogExperiment: tool({
-    description: "Create a PostHog experiment (requires a feature flag)",
+    description: "Create a PostHog experiment (requires a feature flag and a ticket in Linear)",
     inputSchema: z.object({
       name: z.string().describe("The name of the experiment"),
       featureFlagKey: z.string().describe("The key of the feature flag"),
+      linearTicketId: z.string().describe("The ID of the ticket in Linear"),
       implementationEffort: z
         .enum(["low", "medium", "high"])
         .describe("The implementation effort of the experiment"),
