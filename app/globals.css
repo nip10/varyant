@@ -125,3 +125,92 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .animated-lines .animated-line {
+    position: absolute;
+    left: -20%;
+    width: 140%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      rgba(16, 185, 129, 0),
+      rgba(16, 185, 129, 0.55),
+      rgba(6, 182, 212, 0.4),
+      rgba(251, 191, 36, 0.4),
+      rgba(16, 185, 129, 0)
+    );
+    opacity: 0.6;
+    filter: blur(0.1px);
+    animation: drift 16s linear infinite;
+  }
+
+  .animated-lines .line-1 {
+    top: 18%;
+    animation-duration: 18s;
+  }
+
+  .animated-lines .line-2 {
+    top: 48%;
+    animation-duration: 22s;
+    animation-delay: 2s;
+  }
+
+  .animated-lines .line-3 {
+    top: 78%;
+    animation-duration: 20s;
+    animation-delay: 1s;
+  }
+
+  .animated-lines .animated-orb {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 9999px;
+    filter: blur(35px);
+    opacity: 0.55;
+    animation: float 12s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  .animated-lines .orb-1 {
+    top: 10%;
+    right: 12%;
+    background: radial-gradient(
+      circle,
+      rgba(16, 185, 129, 0.35),
+      transparent 55%
+    );
+  }
+
+  .animated-lines .orb-2 {
+    bottom: 12%;
+    left: 10%;
+    background: radial-gradient(
+      circle,
+      rgba(251, 191, 36, 0.28),
+      transparent 55%
+    );
+    animation-duration: 14s;
+    animation-delay: -3s;
+  }
+
+  @keyframes drift {
+    0% {
+      transform: translateX(-10%);
+    }
+    100% {
+      transform: translateX(10%);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px) scale(1);
+    }
+    50% {
+      transform: translateY(-14px) scale(1.05);
+    }
+  }
+}

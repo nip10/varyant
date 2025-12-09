@@ -39,17 +39,37 @@ export async function updateSession(request: NextRequest) {
   // with the Supabase client, your users may be randomly logged out.
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
+  const pathname = request.nextUrl.pathname;
 
   if (
-    request.nextUrl.pathname !== "/" &&
+    user &&
+    (pathname === "/" ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/login"))
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+    return redirectResponse;
+  }
+
+  if (
+    pathname !== "/" &&
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/auth")
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+    return redirectResponse;
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
