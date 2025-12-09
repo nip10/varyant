@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GridPattern } from "@/components/ui/grid-pattern";
 
 const proofPoints = [
   { title: "10+ AI tools", detail: "PostHog, Linear, GitHub, web search" },
@@ -27,10 +28,16 @@ const steps = [
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-linear-to-b from-[#fefaf5] via-white to-[#eef8ff] text-foreground">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,#dfe4ea_1px,transparent_0)] bg-size-[32px_32px] opacity-80" />
-      <AnimatedLines />
+      <GridPattern
+        width={30}
+        height={30}
+        x={-1}
+        y={-1}
+        strokeDasharray="4 2"
+        className="mask-[radial-gradient(520px_circle_at_45%_32%,white,transparent)] opacity-90"
+      />
 
-      <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-10 sm:pt-14">
+      <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-10 sm:pt-16">
         <nav className="mb-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 via-cyan-500 to-amber-400 text-lg font-bold text-white shadow-lg shadow-emerald-500/30">
@@ -60,9 +67,9 @@ export default function Home() {
           </div>
         </nav>
 
-        <section className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="space-y-7">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/80 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur">
+        <section className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               Live demo: AI SDK + PostHog + Linear + GitHub
             </div>
@@ -71,16 +78,15 @@ export default function Home() {
                 Ship experiments with an AI copilot that shows its work.
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground">
-                Varyant analyzes your landing page, runs research, drafts
-                experiments, and opens the PR—while you keep final approval.
-                Built for fast-moving teams and ambitious demos.
+                Varyant reads your landing page, researches patterns, drafts
+                experiments, and opens the PR - while you keep final approval.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/auth/sign-up"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:-translate-y-px hover:shadow-emerald-500/50"
+                className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-emerald-500 to-cyan-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:-translate-y-px hover:shadow-emerald-500/50"
               >
                 Start the experiment
                 <span aria-hidden>→</span>
@@ -97,7 +103,7 @@ export default function Home() {
               {proofPoints.map((item) => (
                 <div
                   key={item.title}
-                  className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white/80 px-4 py-3 text-sm shadow-sm backdrop-blur"
+                  className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm shadow-sm backdrop-blur"
                 >
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-[11px] font-bold text-emerald-700">
                     ●
@@ -117,7 +123,7 @@ export default function Home() {
             <div className="absolute -left-10 -top-6 h-24 w-24 rounded-full bg-amber-400/40 blur-3xl" />
             <div className="absolute -right-6 top-10 h-28 w-28 rounded-full bg-emerald-400/30 blur-3xl" />
 
-            <div className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white/90 shadow-2xl backdrop-blur">
+            <div className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-2xl backdrop-blur">
               <div className="border-b border-emerald-50/80 bg-linear-to-r from-emerald-50 via-white to-amber-50 px-6 py-4">
                 <div className="flex items-center gap-3 text-sm font-semibold text-emerald-900">
                   <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-700">
@@ -128,13 +134,13 @@ export default function Home() {
               </div>
 
               <div className="space-y-4 px-6 py-6">
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-semibold text-emerald-800">
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-sm font-semibold text-emerald-800">
                   “Research mobile CTA conversion, propose two variants, open a
                   PR with the winning layout.”
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white/80 px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white px-4 py-3 shadow-sm">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-sm font-semibold text-emerald-700">
                       PH
                     </span>
@@ -151,7 +157,7 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 rounded-2xl border border-cyan-100 bg-white/80 px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-3 rounded-2xl border border-cyan-100 bg-white px-4 py-3 shadow-sm">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 text-sm font-semibold text-cyan-700">
                       🔎
                     </span>
@@ -168,7 +174,7 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-white/90 px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-white px-4 py-3 shadow-sm">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-sm font-semibold text-amber-700">
                       ✅
                     </span>
@@ -186,7 +192,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-emerald-100/70 bg-emerald-50/70 px-4 py-4">
+                <div className="rounded-2xl border border-emerald-100/70 bg-emerald-50/80 px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
                     Highlight
                   </p>
@@ -200,11 +206,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-16 grid gap-6 md:grid-cols-3">
+        <section className="mt-16 grid gap-7 border-t border-emerald-100/70 pt-12 md:grid-cols-3">
           {steps.map((step) => (
             <div
               key={step.title}
-              className="rounded-3xl border border-emerald-100 bg-white/80 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              className="rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -220,8 +226,8 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="mt-14 grid gap-8 rounded-3xl border border-emerald-100 bg-white/80 p-8 shadow-lg backdrop-blur lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-4">
+        <section className="mt-16 grid gap-10 rounded-3xl border border-emerald-100 bg-white/90 p-10 shadow-xl backdrop-blur lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
               Why teams use Varyant
             </p>
@@ -253,7 +259,7 @@ export default function Home() {
             </ul>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-linear-to-b from-white via-emerald-50 to-white p-6 shadow-inner">
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-linear-to-b from-white via-emerald-50 to-white p-7 shadow-inner">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_30%,rgba(251,191,36,0.08),transparent_35%)]" />
             <div className="relative space-y-5">
               <div className="flex items-center justify-between">
@@ -308,17 +314,5 @@ export default function Home() {
         </section>
       </div>
     </main>
-  );
-}
-
-function AnimatedLines() {
-  return (
-    <div className="animated-lines pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="animated-line line-1" />
-      <div className="animated-line line-2" />
-      <div className="animated-line line-3" />
-      <div className="animated-orb orb-1" />
-      <div className="animated-orb orb-2" />
-    </div>
   );
 }
