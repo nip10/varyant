@@ -1,11 +1,11 @@
 import {
   convertToModelMessages,
-  ModelMessage,
   stepCountIs,
   streamText,
+  type ModelMessage,
 } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
-import { type MyUIMessage, tools } from "@/lib/ai/tools";
+import { anthropic, type AnthropicProviderOptions } from "@ai-sdk/anthropic";
+import { tools, type MyUIMessage } from "@/lib/ai/tools";
 
 export async function POST(req: Request) {
   const { messages }: { messages: MyUIMessage[] } = await req.json();
@@ -15,11 +15,18 @@ export async function POST(req: Request) {
 
   const streamTextResult = streamText({
     model: anthropic("claude-sonnet-4-5"),
+    providerOptions: {
+      anthropic: {
+        sendReasoning: true,
+      } satisfies AnthropicProviderOptions,
+    },
     messages: modelMessages,
     tools,
-    stopWhen: [stepCountIs(10)],
+    stopWhen: [stepCountIs(20)],
   });
 
   // NOTE: We convert the stream to the format expected by the client.
-  return streamTextResult.toUIMessageStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse({
+    sendReasoning: true,
+  });
 }

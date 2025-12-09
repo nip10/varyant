@@ -60,8 +60,8 @@ export default function CopilotClient() {
   };
 
   return (
-    <div className="relative flex size-full flex-col divide-y overflow-hidden px-2 py-4 bg-white max-h-[calc(100dvh-80px)]">
-      <Conversation>
+    <div className="relative flex size-full flex-col overflow-hidden px-2 py-4 bg-white max-h-[calc(100dvh-80px)] gap-2">
+      <Conversation className="border border-border rounded-md">
         <ConversationContent>
           {messages.length === 0 ? (
             <ConversationEmptyState
@@ -70,14 +70,14 @@ export default function CopilotClient() {
               title="Ready when you are"
             />
           ) : (
-            messages.map((message) => (
-              <Message from={message.role} key={message.id}>
+            messages.map((message, i) => (
+              <Message from={message.role} key={`${message.id}-${i}-message`}>
                 <MessageContent>
                   {message.parts.map((part, i) => {
                     switch (part.type) {
                       case "text":
                         return (
-                          <MessageResponse key={`${message.id}-${i}`}>
+                          <MessageResponse key={`${message.id}-${i}-text`}>
                             {part.text}
                           </MessageResponse>
                         );
@@ -88,70 +88,9 @@ export default function CopilotClient() {
                       case "tool-createLinearIssue":
                       case "tool-updateLinearIssue":
                       case "tool-triggerFeatureDevelopment":
-                        if (part.approval) {
-                          return (
-                            <Confirmation
-                              approval={part.approval}
-                              state={part.state}
-                              key={`${message.id}-${i}`}
-                            >
-                              <div className="flex gap-2 items-center">
-                                <ConfirmationRequest>
-                                  <div className="flex flex-col gap-2">
-                                    <span>
-                                      Request for calling tool{" "}
-                                      <span className="font-semibold">
-                                        {part.type}
-                                      </span>{" "}
-                                      with the following input:
-                                    </span>
-                                    <pre className="text-xs bg-muted/50 p-2 rounded-md block text-wrap">
-                                      {JSON.stringify(part.input, null, 2)}
-                                    </pre>
-                                  </div>
-                                </ConfirmationRequest>
-                                <ConfirmationAccepted>
-                                  <CheckIcon className="size-4 text-green-700" />
-                                  <span className="text-green-700">
-                                    You approved this tool execution
-                                  </span>
-                                </ConfirmationAccepted>
-                                <ConfirmationRejected>
-                                  <XIcon className="size-4 text-red-700" />
-                                  <span className="text-red-700">
-                                    You rejected this tool execution
-                                  </span>
-                                </ConfirmationRejected>
-                              </div>
-                              <ConfirmationActions>
-                                <ConfirmationAction
-                                  variant="destructive"
-                                  onClick={() =>
-                                    addToolApprovalResponse({
-                                      id: part.approval!.id,
-                                      approved: false,
-                                    })
-                                  }
-                                >
-                                  Reject
-                                </ConfirmationAction>
-                                <ConfirmationAction
-                                  variant="success"
-                                  onClick={() =>
-                                    addToolApprovalResponse({
-                                      id: part.approval!.id,
-                                      approved: true,
-                                    })
-                                  }
-                                >
-                                  Approve
-                                </ConfirmationAction>
-                              </ConfirmationActions>
-                            </Confirmation>
-                          );
-                        } else {
-                          return (
-                            <Tool key={`${message.id}-${i}`}>
+                        return (
+                          <div key={`${message.id}-${i}-tool-container`}>
+                            <Tool key={`${message.id}-${i}-tool`}>
                               <ToolHeader type={part.type} state={part.state} />
                               <ToolContent>
                                 <ToolInput input={part.input} />
@@ -172,12 +111,72 @@ export default function CopilotClient() {
                                 />
                               </ToolContent>
                             </Tool>
-                          );
-                        }
+                            {part.approval && (
+                              <Confirmation
+                                approval={part.approval}
+                                state={part.state}
+                                key={`${message.id}-${i}-confirmation`}
+                              >
+                                <div className="flex gap-2 items-center">
+                                  <ConfirmationRequest>
+                                    <div className="flex flex-col gap-2">
+                                      <span>
+                                        Request for calling tool{" "}
+                                        <span className="font-semibold">
+                                          {part.type}
+                                        </span>{" "}
+                                        with the following input:
+                                      </span>
+                                      <pre className="text-xs bg-muted/50 p-2 rounded-md block text-wrap">
+                                        {JSON.stringify(part.input, null, 2)}
+                                      </pre>
+                                    </div>
+                                  </ConfirmationRequest>
+                                  <ConfirmationAccepted>
+                                    <CheckIcon className="size-4 text-green-700" />
+                                    <span className="text-green-700">
+                                      You approved this tool execution
+                                    </span>
+                                  </ConfirmationAccepted>
+                                  <ConfirmationRejected>
+                                    <XIcon className="size-4 text-red-700" />
+                                    <span className="text-red-700">
+                                      You rejected this tool execution
+                                    </span>
+                                  </ConfirmationRejected>
+                                </div>
+                                <ConfirmationActions>
+                                  <ConfirmationAction
+                                    variant="destructive"
+                                    onClick={() =>
+                                      addToolApprovalResponse({
+                                        id: part.approval!.id,
+                                        approved: false,
+                                      })
+                                    }
+                                  >
+                                    Reject
+                                  </ConfirmationAction>
+                                  <ConfirmationAction
+                                    variant="success"
+                                    onClick={() =>
+                                      addToolApprovalResponse({
+                                        id: part.approval!.id,
+                                        approved: true,
+                                      })
+                                    }
+                                  >
+                                    Approve
+                                  </ConfirmationAction>
+                                </ConfirmationActions>
+                              </Confirmation>
+                            )}
+                          </div>
+                        );
                       case "reasoning":
                         return (
                           <Reasoning
-                            key={`${message.id}-${i}`}
+                            key={`${message.id}-${i}-reasoning`}
                             className="w-full"
                             isStreaming={
                               status === "streaming" &&
@@ -192,7 +191,7 @@ export default function CopilotClient() {
                       default:
                         return (
                           <span
-                            key={`${message.id}-${i}`}
+                            key={`${message.id}-${i}-unknown`}
                             className="text-xs text-muted-foreground"
                           >
                             Unknown part type: {part.type}

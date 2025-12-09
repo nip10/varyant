@@ -37,12 +37,12 @@ export default async function Dashboard({}: {}) {
   const metrics: Metric[] = [
     {
       label: "Pageviews (7d)",
-      value: pageviews === null ? "—" : `${pageviews}`,
+      value: `${pageviews ?? 0}`,
     },
-    { label: "Signups (7d)", value: signups === null ? "—" : `${signups}` },
+    { label: "Signups (7d)", value: `${signups ?? 0}` },
     {
       label: "Checkouts (7d)",
-      value: checkouts === null ? "—" : `${checkouts}`,
+      value: `${checkouts ?? 0}`,
     },
     {
       label: "Experiments",
