@@ -3,6 +3,16 @@
 
 ---
 
+## Fast Facts (Dec 2025 repo state)
+
+- Next.js (App Router) + TypeScript + Tailwind/shadcn; Supabase auth/session.
+- Vercel AI SDK v6 + AI Elements with Anthropic primary (OpenAI fallback optional).
+- Integrations live in code: PostHog (analytics + seed script `yarn seed:posthog`), Linear (issue creation), GitHub workflow dispatch, Firecrawl/Brave search tools.
+- Copilot page streams reasoning with tool cards; approvals required for PostHog flag creation, Linear ticket, GitHub workflow dispatch.
+- Environment keys validated in `lib/config/env.ts`; run locally with `yarn install && cp .env.example .env.local && yarn dev`.
+
+---
+
 ## Project Context
 
 ### Purpose of This Project

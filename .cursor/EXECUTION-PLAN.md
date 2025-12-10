@@ -1,54 +1,47 @@
-## Execution Plan (Demo-First)
+## Execution Plan (Demo-first, Dec 2025)
 
-- **Goal:** Ship a working demo for the tech talk (analytics dashboard + AI copilot).
-- **Constraints:** Single owner, ASAP timeline, prod-only env, no tests, no feature flags, demo-grade quality acceptable.
-- **Integrations in scope:** PostHog, Linear, Supabase, AI SDK (Vercel AI SDK). Avoid adding others.
+- **Goal:** Keep the Varyant demo reliable: dashboard + AI copilot with visible tool calls and approvals.
+- **Constraints:** Single owner, prod-only, demo-grade polish, no formal tests.
+- **Stack in scope:** Next.js App Router, Supabase auth, PostHog, Linear, GitHub workflow dispatch, Firecrawl/Brave search, Vercel AI SDK v6 (Anthropic primary, OpenAI optional).
 
 ### Workstream 1 — Baseline & Environment
-- [ ] Validate `.env.local` against required keys (PostHog, Linear, Supabase, AI SDK).
-- [ ] Confirm prod deployment target and secrets placement (Vercel or equivalent).
-- [ ] Run app end-to-end locally; note any broken imports or missing deps.
-- [ ] Lock package versions if drifted; run `yarn install` sanity check.
+- [ ] Copy `.env.example` → `.env.local`; fill all keys from `lib/config/env.ts`.
+- [ ] `yarn install` → `yarn dev`; smoke `/`, `/dashboard`, `/copilot`.
+- [ ] Verify Supabase auth (sign-up/login/reset) flows.
+- [ ] Confirm secrets exist in Vercel for prod deploy.
 
-### Workstream 2 — PostHog Analytics (Read-Only + Seeding)
-- [ ] Ensure PostHog client/server keys load via config helper.
-- [ ] Implement/verify queries for metrics, funnels, experiments required by UI.
-- [ ] Wire queries into dashboard components (loading/error states acceptable to be minimal).
-- [ ] Add seeding script `scripts/seed-posthog.ts`:
-  - [ ] Generate ~1k users, ~20–50k events over last 7 days.
-  - [ ] Event mix: `pageview`, `signup`, `experiment_view`, `variant_a_click`, `variant_b_click`, `checkout`, `experiment_created`, `ticket_created`.
-  - [ ] Properties: `plan`, `device`, `country`, `utm_campaign`, `demo_seed=true`.
-  - [ ] Ensure funnels: pageview → signup → checkout; A/B split with slight B uplift.
-  - [ ] Include one completed experiment with B “winning.”
-  - [ ] Flags: `--confirm` required to run; optional `DRY_RUN`.
-  - [ ] Run via `yarn seed:posthog` (add script).
+### Workstream 2 — Analytics & Seeding
+- [ ] Run `yarn seed:posthog --dry-run` to inspect the plan JSON.
+- [ ] Run `yarn seed:posthog --confirm` once keys are set; spot-check data in PostHog (CTA funnel + properties).
+- [ ] Ensure dashboard cards/queries and copilot PostHog tools read seeded events without errors.
 
-### Workstream 3 — AI Copilot (Vercel AI SDK)
-- [ ] Confirm model routing (primary Anthropic/OpenAI fallback) and API keys present.
-- [ ] Inventory tools exposed to the agent; keep to required PostHog + Linear + Supabase utilities.
-- [ ] Implement multi-step reasoning flow with visible streaming.
-- [ ] Add at least 3 approval gates (experiment creation, Linear ticket, any write to external service).
-- [ ] Structure outputs (tables/charts/snippets) for demo clarity.
+### Workstream 3 — Copilot (AI SDK v6 + AI Elements)
+- [ ] Validate Anthropic key present; set OpenAI fallback if available.
+- [ ] Confirm streaming + tool cards render in `/copilot`.
+- [ ] Approval modals block writes for PostHog experiment creation, Linear ticket, and GitHub dispatch.
+- [ ] Keep prompt scripts handy for the live run (analysis → recommend → create).
 
 ### Workstream 4 — Integrations
-- **Linear:** [ ] Ticket creation tool; [ ] minimal payload (title/body) fed by agent; [ ] dry-run mode toggle optional.
-- **Supabase:** [ ] Define minimal tables or storage usage (notes/session logs if needed); [ ] env keys wired.
-- **PostHog:** [ ] Queries already covered; [ ] ensure host/project ID configurable.
+- **PostHog:** [ ] `POSTHOG_PROJECT_ID/KEY/HOST` wired; [ ] list/create experiment tools return data.
+- **Linear:** [ ] `LINEAR_API_KEY/TEAM_ID` set; [ ] issue creation succeeds via approval flow.
+- **GitHub:** [ ] `GITHUB_TOKEN/REPO` (+ optional `GITHUB_WORKFLOW_ID`) set; [ ] workflow dispatch tested.
+- **Firecrawl/Brave:** [ ] `FIRECRAWL_API_KEY` set; [ ] web fetch/search tools respond with content.
+- **Supabase:** [ ] `NEXT_PUBLIC_SUPABASE_*` + `SUPABASE_SECRET_KEY` valid; [ ] session persistence confirmed.
 
-### Workstream 5 — UI & Demo Flow
-- [ ] Dashboard page shows key metrics + recent experiments summary.
-- [ ] Chat panel with streaming responses and tool-call transparency.
-- [ ] Approval modals surfaced inline with clear copy.
-- [ ] “Happy path” demo script rehearsed end-to-end (no dead ends).
+### Workstream 5 — Demo Flow & UX
+- [ ] Prepare 3–5 canned prompts and expected tool chain outputs.
+- [ ] Pre-auth PostHog/Linear/GitHub tabs; have seed JSON handy as offline fallback.
+- [ ] Copy on approvals is clear; minimal toasts over blank states.
+- [ ] Time the happy path (<10 minutes).
 
-### Workstream 6 — Stability for Demo
-- [ ] Add basic error toasts/fallbacks (no blank screens).
-- [ ] Preload/prime any slow first-call (model warm-up) before going on stage.
-- [ ] Network/offline contingencies: have cached example response or short recording available.
+### Workstream 6 — Stability & Safety
+- [ ] Warm model once pre-demo to reduce first-token delay.
+- [ ] Keep error surfaces gentle (retry CTA, not stack traces).
+- [ ] Monitor rate limits; cap web searches per session if needed.
 
-### Milestones (ASAP Oriented)
-- **M1: App boots & env valid** — runs locally with keys, no crashes.
-- **M2: Analytics visible** — dashboard shows PostHog data.
-- **M3: Copilot operational** — AI can read metrics and propose experiment.
-- **M4: Writes gated** — approvals in place; Linear ticket creation demonstrated.
-- **M5: Demo-ready** — rehearsed script passes without blockers.
+### Milestones (ASAP)
+- **M1: App boots with envs** — local dev runs, auth works.
+- **M2: Analytics visible** — dashboard + tools read seeded PostHog data.
+- **M3: Copilot reliable** — streaming + tool cards + approvals confirmed.
+- **M4: Writes gated** — PostHog/Linear/GitHub actions blocked until approved.
+- **M5: Demo-ready** — rehearsed script, fallback assets prepared.
