@@ -6,6 +6,60 @@ const authHeaders = {
   "Content-Type": "application/json",
 };
 
+/**
+ * Escapes a string value for safe use in HogQL queries.
+ * Prevents SQL injection by escaping special characters.
+ */
+function escapeHogQLString(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\") // Escape backslashes first
+    .replace(/'/g, "''"); // Escape single quotes by doubling
+}
+
+/**
+ * Valid interval units for HogQL date range queries.
+ */
+const VALID_INTERVAL_UNITS = [
+  "SECOND",
+  "MINUTE",
+  "HOUR",
+  "DAY",
+  "WEEK",
+  "MONTH",
+  "QUARTER",
+  "YEAR",
+] as const;
+
+/**
+ * Validates and sanitizes a date range string for HogQL INTERVAL.
+ * Expected format: "N UNIT" where N is a positive integer and UNIT is a valid interval.
+ * @throws Error if the format is invalid
+ */
+function validateDateRange(dateRange: string): string {
+  const match = dateRange.trim().match(/^(\d+)\s+([A-Z]+)$/i);
+  if (!match) {
+    throw new Error(
+      `Invalid date range format: "${dateRange}". Expected format: "N UNIT" (e.g., "30 DAY")`
+    );
+  }
+
+  const [, amount, unit] = match;
+  const upperUnit = unit.toUpperCase();
+
+  if (!VALID_INTERVAL_UNITS.includes(upperUnit as (typeof VALID_INTERVAL_UNITS)[number])) {
+    throw new Error(
+      `Invalid interval unit: "${unit}". Valid units: ${VALID_INTERVAL_UNITS.join(", ")}`
+    );
+  }
+
+  const numAmount = parseInt(amount, 10);
+  if (numAmount <= 0 || numAmount > 365) {
+    throw new Error(`Invalid interval amount: ${amount}. Must be between 1 and 365.`);
+  }
+
+  return `${numAmount} ${upperUnit}`;
+}
+
 export type HogQLResponse = {
   results: unknown[];
   types?: Record<string, string>;
@@ -37,14 +91,16 @@ export const runHogQL = async (
 };
 
 export const getEventCount = async (event: string, dateRange = "30 DAY") => {
+  const safeEvent = escapeHogQLString(event);
+  const safeDateRange = validateDateRange(dateRange);
+
   const query = `
     SELECT
       count()
     FROM events
-    WHERE event = '${event}'
-      AND timestamp > now() - INTERVAL ${dateRange}
+    WHERE event = '${safeEvent}'
+      AND timestamp > now() - INTERVAL ${safeDateRange}
   `;
-  console.log("Running query", query);
   return runHogQL("event_count", query);
 };
 
