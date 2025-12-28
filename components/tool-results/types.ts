@@ -5,12 +5,16 @@ import type { LucideIcon } from "lucide-react";
 // Tool names as they appear in the UI parts
 export type ToolName =
   | "tool-queryPosthogInsights"
+  | "tool-queryPosthogAnalytics"
   | "tool-createPostHogFeatureFlag"
   | "tool-createPostHogExperiment"
   | "tool-createLinearIssue"
   | "tool-updateLinearIssue"
   | "tool-triggerFeatureDevelopment"
-  | "tool-crawlWebsite";
+  | "tool-crawlWebsite"
+  | "tool-analyzeExperiment"
+  | "tool-analyzeCompetitor"
+  | "tool-showLiveExperiment";
 
 // Base props for all tool result components
 export interface ToolResultProps<TInput = unknown, TOutput = unknown> {
@@ -60,11 +64,10 @@ export interface PosthogFeatureFlagInput {
 }
 
 export interface PosthogFeatureFlagOutput {
-  featureFlagKey: string;
-  id?: number;
-  key?: string;
-  name?: string;
-  active?: boolean;
+  id: number;
+  key: string;
+  name: string;
+  active: boolean;
   filters?: {
     multivariate?: {
       variants?: Array<{
@@ -74,6 +77,8 @@ export interface PosthogFeatureFlagOutput {
       }>;
     };
   };
+  // Keep these for backward compat
+  featureFlagKey?: string;
 }
 
 // PostHog Experiment types
@@ -91,6 +96,7 @@ export interface PosthogExperimentOutput {
   start_date?: string;
   end_date?: string;
   created_at: string;
+  description?: string;
 }
 
 // Linear Issue types
@@ -124,6 +130,9 @@ export interface GithubWorkflowInput {
 export interface GithubWorkflowOutput {
   status: string;
   workflowId: string;
+  repo?: string;
+  ref?: string;
+  workflowUrl?: string;
 }
 
 // Website Screenshot types
@@ -133,5 +142,33 @@ export interface WebsiteScreenshotInput {
 }
 
 export interface WebsiteScreenshotOutput {
-  screenshotUrl: string;
+  screenshotUrl?: string;
+  markdown?: string;
+  html?: string;
+  links?: string[];
+  metadata?: {
+    title?: string;
+    description?: string;
+  };
+}
+
+// PostHog Analytics Query types
+export type ChartType = "line" | "bar" | "pie" | "number" | "table";
+
+export interface PosthogQueryInput {
+  question: string;
+  hogqlQuery: string;
+  visualization?: ChartType;
+}
+
+export interface PosthogQueryOutput {
+  question: string;
+  hogql: string;
+  results: Record<string, unknown>[];
+  columns: string[];
+  chartType: ChartType;
+  metadata: {
+    rowCount: number;
+    columnCount: number;
+  };
 }

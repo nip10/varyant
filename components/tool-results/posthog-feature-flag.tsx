@@ -78,7 +78,7 @@ export function PosthogFeatureFlagResult({
           </div>
           <Button variant="ghost" size="icon" className="size-7 shrink-0" asChild>
             <a
-              href={`https://app.posthog.com/feature_flags`}
+              href={`${process.env.NEXT_PUBLIC_POSTHOG_HOST}/feature_flags/${output.id}`}
               target="_blank"
               rel="noopener noreferrer"
             >

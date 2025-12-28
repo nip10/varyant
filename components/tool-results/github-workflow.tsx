@@ -60,7 +60,7 @@ export function GithubWorkflowResult({
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <GitBranchIcon className="size-3.5" />
           <span>Triggered on</span>
-          <code className="rounded bg-muted px-1.5 py-0.5 font-mono">main</code>
+          <code className="rounded bg-muted px-1.5 py-0.5 font-mono">{output.ref || "main"}</code>
         </div>
 
         <div className="flex items-center gap-2 text-xs">
@@ -72,7 +72,7 @@ export function GithubWorkflowResult({
 
         <Button variant="outline" size="sm" className="w-full" asChild>
           <a
-            href="https://github.com"
+            href={output.workflowUrl || "https://github.com"}
             target="_blank"
             rel="noopener noreferrer"
             className="gap-1.5"

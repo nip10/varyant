@@ -97,6 +97,14 @@ export type PromptInputControllerProps = {
     ref: RefObject<HTMLInputElement | null>,
     open: () => void
   ) => void;
+  /** Ref to the textarea element for external access (e.g., keyboard shortcuts) */
+  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  /** INTERNAL: Allows PromptInputTextarea to register its ref */
+  __registerTextarea: (ref: RefObject<HTMLTextAreaElement | null>) => void;
+  /** Submit the form programmatically */
+  submit: () => void;
+  /** INTERNAL: Allows PromptInput to register its form ref */
+  __registerForm: (ref: RefObject<HTMLFormElement | null>) => void;
 };
 
 const PromptInputController = createContext<PromptInputControllerProps | null>(
@@ -155,6 +163,12 @@ export function PromptInputProvider({
   >([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const openRef = useRef<() => void>(() => {});
+
+  // ----- textarea ref for external access (e.g., keyboard shortcuts)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // ----- form ref for programmatic submit
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const add = useCallback((files: File[] | FileList) => {
     const incoming = Array.from(files);
@@ -235,6 +249,24 @@ export function PromptInputProvider({
     []
   );
 
+  const __registerTextarea = useCallback(
+    (ref: RefObject<HTMLTextAreaElement | null>) => {
+      textareaRef.current = ref.current;
+    },
+    []
+  );
+
+  const __registerForm = useCallback(
+    (ref: RefObject<HTMLFormElement | null>) => {
+      formRef.current = ref.current;
+    },
+    []
+  );
+
+  const submit = useCallback(() => {
+    formRef.current?.requestSubmit();
+  }, []);
+
   const controller = useMemo<PromptInputControllerProps>(
     () => ({
       textInput: {
@@ -244,8 +276,12 @@ export function PromptInputProvider({
       },
       attachments,
       __registerFileInput,
+      textareaRef,
+      __registerTextarea,
+      submit,
+      __registerForm,
     }),
-    [textInput, clearInput, attachments, __registerFileInput]
+    [textInput, clearInput, attachments, __registerFileInput, __registerTextarea, submit, __registerForm]
   );
 
   return (
@@ -599,6 +635,12 @@ export const PromptInput = ({
     controller.__registerFileInput(inputRef, () => inputRef.current?.click());
   }, [usingProvider, controller]);
 
+  // Register the form ref with the controller for programmatic submit
+  useEffect(() => {
+    if (!usingProvider) return;
+    controller.__registerForm(formRef);
+  }, [usingProvider, controller]);
+
   // Note: File input cannot be programmatically set for security reasons
   // The syncHiddenInput prop is no longer functional
   useEffect(() => {
@@ -825,6 +867,14 @@ export const PromptInputTextarea = ({
   const controller = useOptionalPromptInputController();
   const attachments = usePromptInputAttachments();
   const [isComposing, setIsComposing] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Register the textarea ref with the controller for external access
+  useEffect(() => {
+    if (controller) {
+      controller.__registerTextarea(textareaRef);
+    }
+  }, [controller]);
 
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter") {
@@ -900,6 +950,7 @@ export const PromptInputTextarea = ({
 
   return (
     <InputGroupTextarea
+      ref={textareaRef}
       className={cn("field-sizing-content max-h-48 min-h-16", className)}
       name="message"
       onCompositionEnd={() => setIsComposing(false)}

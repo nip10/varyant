@@ -53,5 +53,11 @@ export const triggerWorkflowDispatch = async ({
     );
   }
 
-  return { status: "dispatched", workflowId: id };
+  return {
+    status: "dispatched",
+    workflowId: id,
+    repo: `${owner}/${repo}`,
+    ref,
+    workflowUrl: `https://github.com/${owner}/${repo}/actions/workflows/${id}`,
+  };
 };

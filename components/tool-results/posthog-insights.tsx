@@ -97,7 +97,7 @@ export function PosthogInsightsResult({
                 asChild
               >
                 <a
-                  href={`https://app.posthog.com/insights/${insight.short_id}`}
+                  href={`${process.env.NEXT_PUBLIC_POSTHOG_HOST}/insights/${insight.short_id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

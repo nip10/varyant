@@ -31,6 +31,7 @@ export const Message = ({ className, from, ...props }: MessageProps) => (
   <div
     className={cn(
       "group flex w-full max-w-[95%] flex-col gap-2",
+      "animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out",
       from === "user" ? "is-user ml-auto justify-end" : "is-assistant",
       className
     )}

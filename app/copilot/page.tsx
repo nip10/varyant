@@ -9,7 +9,15 @@ import { Suspense } from "react";
 import { BotIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-export default async function CopilotPage() {
+type SearchParams = Promise<{ prompt?: string }>;
+
+export default async function CopilotPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const { prompt } = await searchParams;
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -33,7 +41,7 @@ export default async function CopilotPage() {
           </div>
         </header>
         <Suspense fallback={<div>Loading...</div>}>
-          <CopilotClient />
+          <CopilotClient initialPrompt={prompt} />
         </Suspense>
       </SidebarInset>
     </SidebarProvider>

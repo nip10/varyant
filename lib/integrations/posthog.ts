@@ -106,9 +106,31 @@ export const getEventCount = async (event: string, dateRange = "30 DAY") => {
 
 export interface PosthogExperimentListResponse {
   count: number;
-  next: any;
-  previous: any;
+  next: string | null;
+  previous: string | null;
   results: Result[];
+}
+
+export interface Holdout {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface ExposureCohort {
+  id: number;
+  name: string;
+}
+
+export interface SecondaryMetric {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export interface SavedMetric {
+  id: string;
+  name: string;
 }
 
 export interface Result {
@@ -116,16 +138,16 @@ export interface Result {
   name: string;
   description?: string;
   start_date?: string;
-  end_date: any;
+  end_date: string | null;
   feature_flag_key: string;
   feature_flag: FeatureFlag;
-  holdout: any;
-  holdout_id: any;
-  exposure_cohort: any;
+  holdout: Holdout | null;
+  holdout_id: number | null;
+  exposure_cohort: ExposureCohort | null;
   parameters: Parameters;
-  secondary_metrics: any[];
-  saved_metrics: any[];
-  saved_metrics_ids: any;
+  secondary_metrics: SecondaryMetric[];
+  saved_metrics: SavedMetric[];
+  saved_metrics_ids: string[] | null;
   filters: Filters2;
   archived: boolean;
   deleted: boolean;
@@ -135,12 +157,12 @@ export interface Result {
   type: string;
   exposure_criteria: ExposureCriteria;
   metrics: Metric[];
-  metrics_secondary: any[];
+  metrics_secondary: Metric[];
   stats_config: StatsConfig;
-  conclusion: any;
-  conclusion_comment: any;
+  conclusion: string | null;
+  conclusion_comment: string | null;
   primary_metrics_ordered_uuids?: string[];
-  secondary_metrics_ordered_uuids: any;
+  secondary_metrics_ordered_uuids: string[] | null;
   user_access_level: string;
 }
 
@@ -157,20 +179,33 @@ export interface FeatureFlag {
   version: number;
   evaluation_runtime: string;
   bucketing_identifier: string;
-  evaluation_tags: any[];
+  evaluation_tags: string[];
+}
+
+export interface HoldoutGroup {
+  id: number;
+  name: string;
+  rollout_percentage: number;
 }
 
 export interface Filters {
   groups: Group[];
   payloads?: Payloads;
   multivariate: Multivariate;
-  holdout_groups: any;
-  aggregation_group_type_index: any;
+  holdout_groups: HoldoutGroup[] | null;
+  aggregation_group_type_index: number | null;
+}
+
+export interface GroupProperty {
+  key: string;
+  value: string | number | boolean | string[];
+  operator?: string;
+  type?: string;
 }
 
 export interface Group {
-  variant: any;
-  properties: any[];
+  variant: string | null;
+  properties: GroupProperty[];
   rollout_percentage: number;
 }
 
@@ -198,6 +233,11 @@ export interface FeatureFlagVariant {
 
 export interface Filters2 {}
 
+export interface HedgehogConfig {
+  accessories?: string[];
+  color?: string;
+}
+
 export interface CreatedBy {
   id: number;
   uuid: string;
@@ -206,7 +246,7 @@ export interface CreatedBy {
   last_name: string;
   email: string;
   is_email_verified: boolean;
-  hedgehog_config: any;
+  hedgehog_config: HedgehogConfig | null;
   role_at_organization: string;
 }
 
@@ -252,13 +292,44 @@ export const listExperiments = async () => {
 export type CreateExperimentInput = {
   name: string;
   featureFlagKey: string;
+  linearTicketId?: string;
+  implementationEffort?: "low" | "medium" | "high";
 };
 
-export const createExperiment = async (input: CreateExperimentInput) => {
+export type CreateExperimentResponse = {
+  id: number;
+  name: string;
+  feature_flag_key: string;
+  start_date?: string;
+  created_at: string;
+  description?: string;
+  end_date?: string;
+  feature_flag?: FeatureFlag;
+  parameters?: Parameters;
+  metrics?: Metric[];
+  archived?: boolean;
+  deleted?: boolean;
+  created_by?: CreatedBy;
+  updated_at?: string;
+  type?: string;
+};
+
+export const createExperiment = async (input: CreateExperimentInput): Promise<CreateExperimentResponse> => {
+  // Build description with Linear ticket and implementation effort metadata
+  const descriptionParts: string[] = [];
+  if (input.linearTicketId) {
+    descriptionParts.push(`Linear Ticket: ${input.linearTicketId}`);
+  }
+  if (input.implementationEffort) {
+    descriptionParts.push(`Implementation Effort: ${input.implementationEffort}`);
+  }
+  const description = descriptionParts.length > 0 ? descriptionParts.join(" | ") : undefined;
+
   const payload = {
     name: input.name,
     feature_flag_key: input.featureFlagKey,
     start_date: new Date().toISOString(), // start immediately
+    ...(description && { description }),
     // hardcoded for the demo, time is running out
     metrics: [
       {
@@ -289,7 +360,8 @@ export const createExperiment = async (input: CreateExperimentInput) => {
     );
   }
 
-  return res.json();
+  const data = (await res.json()) as CreateExperimentResponse;
+  return data;
 };
 
 export type PosthogInsightListResponse = {
@@ -426,6 +498,63 @@ export type CreateFeatureFlagInput = {
   numVariants: number;
 };
 
+/**
+ * Get a single experiment by ID
+ */
+export const getExperiment = async (experimentId: number): Promise<Result> => {
+  const res = await fetch(`${projectBaseUrl}/experiments/${experimentId}`, {
+    headers: authHeaders,
+  });
+
+  if (!res.ok) {
+    const message = await res.text();
+    throw new Error(`PostHog experiment fetch failed: ${res.status} ${message}`);
+  }
+
+  return res.json();
+};
+
+/**
+ * Experiment results response type
+ */
+export interface ExperimentResultsResponse {
+  insight: unknown[];
+  variants: {
+    key: string;
+    count: number;
+    absolute_exposure: number;
+    failure_count?: number;
+    success_count?: number;
+  }[];
+  probability: Record<string, number>;
+  significant: boolean;
+  significance_code: string;
+  expected_loss: number;
+  credible_intervals: Record<string, [number, number]>;
+  p_value?: number;
+  last_refresh?: string;
+  is_cached?: boolean;
+}
+
+/**
+ * Get experiment results with statistical analysis
+ */
+export const getExperimentResults = async (
+  experimentId: number
+): Promise<ExperimentResultsResponse> => {
+  const res = await fetch(`${projectBaseUrl}/experiments/${experimentId}/results`, {
+    headers: authHeaders,
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const message = await res.text();
+    throw new Error(`PostHog experiment results fetch failed: ${res.status} ${message}`);
+  }
+
+  return res.json();
+};
+
 export const createFeatureFlag = async (input: CreateFeatureFlagInput) => {
   const payload = {
     updated_at: null,
@@ -490,5 +619,5 @@ export const createFeatureFlag = async (input: CreateFeatureFlagInput) => {
   }
 
   const data = (await res.json()) as CreateFeatureFlagResponse;
-  return { featureFlagKey: data.key };
+  return data; // Return full CreateFeatureFlagResponse
 };

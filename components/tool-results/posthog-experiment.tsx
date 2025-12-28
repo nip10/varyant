@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useConfetti } from "@/lib/hooks/use-confetti";
 import { cn } from "@/lib/utils";
 import {
   BeakerIcon,
@@ -10,6 +11,7 @@ import {
   FlagIcon,
   LinkIcon,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type {
   PosthogExperimentInput,
   PosthogExperimentOutput,
@@ -28,15 +30,36 @@ export function PosthogExperimentResult({
   output,
   state,
 }: ToolResultProps<PosthogExperimentInput, PosthogExperimentOutput>) {
+  const { celebrate } = useConfetti();
+  const hasCelebratedRef = useRef(false);
+
+  const experimentName = output?.name || input.name;
+  const flagKey = output?.feature_flag_key || input.featureFlagKey;
+  const createdAt = output?.created_at
+    ? new Date(output.created_at).toLocaleDateString()
+    : null;
+  // Check if experiment has start_date to determine if it's running
+  const status = output?.start_date
+    ? output.end_date
+      ? "Completed"
+      : "Running"
+    : "Draft";
+
+  // Celebrate when experiment is successfully created
+  useEffect(() => {
+    if (state === "output-available" && output?.id && !hasCelebratedRef.current) {
+      hasCelebratedRef.current = true;
+      // Small delay for better UX - let the UI render first
+      const timer = setTimeout(() => {
+        celebrate();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [state, output?.id, celebrate]);
+
   if (state !== "output-available" || !output) {
     return null;
   }
-
-  const experimentName = output.name || input.name;
-  const flagKey = output.feature_flag_key || input.featureFlagKey;
-  const createdAt = output.created_at
-    ? new Date(output.created_at).toLocaleDateString()
-    : null;
 
   return (
     <div className="space-y-3 p-4">
@@ -46,7 +69,7 @@ export function PosthogExperimentResult({
           <span className="text-sm font-medium">Experiment Created</span>
         </div>
         <Badge className="bg-blue-500 hover:bg-blue-600 text-xs">
-          Draft
+          {status}
         </Badge>
       </div>
 
@@ -69,7 +92,14 @@ export function PosthogExperimentResult({
 
           <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
             <LinkIcon className="size-3.5 text-indigo-500" />
-            <span className="text-xs">{input.linearTicketId}</span>
+            <a
+              href={`https://linear.app/issue/${input.linearTicketId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs hover:underline"
+            >
+              {input.linearTicketId}
+            </a>
           </div>
 
           <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
@@ -88,7 +118,7 @@ export function PosthogExperimentResult({
         <div className="flex justify-end">
           <Button variant="outline" size="sm" asChild>
             <a
-              href={`https://app.posthog.com/experiments/${output.id}`}
+              href={`${process.env.NEXT_PUBLIC_POSTHOG_HOST}/experiments/${output.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="gap-1.5"
@@ -120,7 +150,7 @@ export function PosthogExperimentApproval({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
         <div className="rounded-md bg-white dark:bg-gray-900 border p-2">
           <p className="text-muted-foreground mb-0.5">Feature Flag</p>
           <code className="font-mono text-[11px]">{input.featureFlagKey}</code>
