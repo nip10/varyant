@@ -24,7 +24,11 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
   <Collapsible
-    className={cn("not-prose mb-4 w-full rounded-md border", className)}
+    className={cn(
+      "not-prose mb-4 w-full rounded-md border",
+      "animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out",
+      className
+    )}
     {...props}
   />
 );
@@ -58,7 +62,7 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
   };
 
   return (
-    <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
+    <Badge className="gap-1.5 rounded-full text-xs transition-colors duration-200" variant="secondary">
       {icons[status]}
       {labels[status]}
     </Badge>

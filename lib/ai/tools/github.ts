@@ -7,10 +7,11 @@ export const githubTools = {
     description: "Trigger a feature development workflow",
     inputSchema: z.object({
       feature: z.string().describe("The feature to develop"),
+      ref: z.string().optional().default("main").describe("The git ref (branch/tag) to run the workflow on"),
     }),
-    execute: async ({ feature }) => {
-      const data = await triggerWorkflowDispatch({ inputs: { feature } });
-      return data;
+    execute: async ({ feature, ref }) => {
+      const result = await triggerWorkflowDispatch({ inputs: { feature }, ref });
+      return result;
     },
     needsApproval: true,
   }),
